@@ -9,46 +9,83 @@ namespace APBD_2
     {
         static void Main(string[] args)
         {
-            var arg1 = args.Length > 0 ? args[0] : @"Files\dane.csv";
-            var arg2 = args.Length > 1 ? args[1] : @"Files\result.xml";
-            var arg3 = args.Length > 2 ? args[2] : "xml";
+            var input = args.Length > 0 ? args[0] : @"Files\dane.csv";
+            var output = args.Length > 1 ? args[1] : @"Files\result";
+            var form = args.Length > 2 ? args[2] : "xml";
 
             try
             {
-                if (!File.Exists(arg1))
-                    throw new FileNotFoundException("ERR", arg1.Split("\\")[^1]);
-                //File.AppendAllText("Log.txt", $"{DateTime.UtcNow} Err File not found!");
-
-                var university = new Uczelnia();
-
-                foreach (var line in File.ReadAllLines(arg1))
+                var university = new Uczelnia()
                 {
-                    //Console.WriteLine(line);
-                    File.AppendAllText(arg2, line + "\n");
+                    Author = "Gabriel Sek",
+                };
+
+                foreach (var line in File.ReadAllLines(input))
+                {
+                    var array = line.Split(",");
+
+                    if(array.Length < 9)
+                    {
+                        File.AppendAllText("Log.txt", $"{DateTime.UtcNow} Invalid number of students arguments" + "\n");
+                    }
+
+                    if (array[0] == "" || array[1] == "" || array[2] == "" || array[3] == "" || array[4] == "" ||
+                        array[5] == "" || array[6] == "" || array[7] == "" || array[8] == "")
+                    {
+                        File.AppendAllText("Log.txt", $"{DateTime.UtcNow} Empty brackets!!!" + "\n");
+                    }
+
 
                     var stud = new Student
                     {
-                        Imie = "aaa",
-                        Nazwisko = "bbb",
-                        Email = "a@b.pl"
+                        id = array[4],
+                        fname = array[0],
+                        lname= array[1],
+                        birthdate = array[5],
+                        email = array[6],
+                        mothersName = array[7],
+                        fathersName = array[8],
+                        studies = new Studies
+                        {
+                            name = array[2],
+                            mode = array[3]
+                        }
+
                     };
+                    if(!university.Students.Contains(stud))
                     university.Students.Add(stud);
+
+                    var actStudies = new ActiveStudies
+                    {
+                        name = array[2],
+                        count = 1
+                    };
+
+                    if (!university.activeStudies.Contains(actStudies))
+                        university.activeStudies.Add(actStudies);
+                    else
+                    {
+                        foreach(ActiveStudies temp in university.activeStudies)
+                        {
+                            if (temp.Equals(actStudies))
+                                temp.count++;
+                        }
+                    }
+
                 }
 
-                using var writer = new FileStream($"{arg2}.xml", FileMode.Create);
+                using var writer = new FileStream($"{output}.xml", FileMode.Create);
                 var serializer = new XmlSerializer(typeof(Uczelnia));
                 serializer.Serialize(writer, university);
             }
             catch (FileNotFoundException e)
             {
-                File.AppendAllText("Log.txt", $"{DateTime.UtcNow} {e.Message} {e.FileName}");
+                File.AppendAllText("Log.txt", $"{DateTime.UtcNow} {e.Message} {e.FileName}" + "\n");
             }
-
-            //Console.Write($"{arg1}/n{arg2}/n{arg3}");
-            //Console.WriteLine("Hello World!");
+            catch(ArgumentException e)
+            {
+                File.AppendAllText("Log.txt", $"{DateTime.UtcNow} {e.Message} {e.ParamName}" + "\n");
+            }
         }
     }
 }
-/*using var writer = new FileStream($"{outputPath}", FileMode.Create);
-var serializer = new XmlSerializer(typeof(Student));
-serializer.Serialize(writer, uczelnia);*/
