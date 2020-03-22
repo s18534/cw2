@@ -3,14 +3,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Xml.Serialization;
 using APBD_2.Models;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+
 namespace APBD_2
 {
     class Program
     {
         static void Main(string[] args)
         {
-            var input = args.Length > 0 ? args[0] : @"Files\dane.csv";
-            var output = args.Length > 1 ? args[1] : @"Files\result";
+            var input = args.Length > 0 ? args[0] : @"Files\dane.csv"; //@"Files\dane.csv"
+            var output = args.Length > 1 ? args[1] : @"Files\result.xml"; //
             var form = args.Length > 2 ? args[2] : "xml";
 
             try
@@ -74,9 +77,28 @@ namespace APBD_2
 
                 }
 
-                using var writer = new FileStream($"{output}.xml", FileMode.Create);
-                var serializer = new XmlSerializer(typeof(Uczelnia));
-                serializer.Serialize(writer, university);
+                if (form.Equals("xml"))
+                {
+                    using var writer = new FileStream($"{output}", FileMode.Create);
+                    var serializer = new XmlSerializer(typeof(Uczelnia));
+                    serializer.Serialize(writer, university);
+                }
+                else if (form.Equals("json"))
+                {
+                    using var writer = new FileStream($"{output}", FileMode.Create);
+                    var options = new JsonSerializerOptions
+                    {
+                        WriteIndented = true,
+                        IgnoreNullValues = true
+                    }
+                    ;
+                    var serializer = JsonSerializer.Serialize(university, options);
+
+                    File.WriteAllText($"{output}", serializer);
+                }
+                else
+                    File.AppendAllText("Log.txt", $"{DateTime.UtcNow}  not supported form" + "\n");
+
             }
             catch (FileNotFoundException e)
             {

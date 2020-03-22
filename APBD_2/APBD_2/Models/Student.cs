@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Xml.Serialization;
+using System.Text.Json.Serialization;
 
 
 namespace APBD_2.Models
@@ -9,6 +10,7 @@ namespace APBD_2.Models
     public class Student
     {
         [XmlAttribute(AttributeName = "indexNumber")]
+        [JsonPropertyName("indexNumber")]
         public string id { get; set; }
 
         public string fname { get; set; }
